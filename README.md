@@ -8,6 +8,6 @@ The program is used to take the data stored in the research template format, cle
 - <code> pip install numpy </code>
 
 ### steps:
-- have your terminal in the ETL directory
+- have your terminal in the ARPETL directory
 - check the input and output data path specified in the config.yml. If you have the research data file located in a different directory, or if you want to push the output data into a different directory, you need to change the path values in the config.yml (line 2 and line 166)
 - type the command <code> python run.py </code>
