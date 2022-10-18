@@ -1,0 +1,5 @@
+MyError.py
+*.csv
+*.xlsx
+*.log
+__pycache__/

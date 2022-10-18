@@ -1,0 +1,173 @@
+input:
+    data_path: N:\Project\51448_ARPA\DC1\6. Data\mockup
+    fn: 2022 recovery plans_draft template_v2_mockup.xlsx
+    # data_path: N:\Project\51448_ARPA\DC1\6. Data\
+    # fn: 2022 recovery plans_draft template_v2_mockup.xlsx
+    var:
+      Jurisdication:
+        sheet: 'Funding and ratings'
+        colpos: A:C
+        skiprow: 2
+        skipfooter: 0
+        colnames:
+          - Level_of_Goverment
+          - State
+          - Jurisdication
+      Fund:
+        sheet: 'Funding and ratings'
+        colpos: A:I,O,V,X:AI
+        skiprow: 5
+        skipfooter: 2
+        colnames:
+          - Level_of_Goverment
+          - State
+          - Jurisdication
+          - SLFRF_Award
+          - Population
+          - Award_Per_Capita
+          - RecoveryPlan_2021
+          - RecoveryPlan_Interim
+          - RecoveryPlan_2022
+          - Obligated_Funds
+          - Expended_Funds
+          - Expenditure_EC34
+          - Num_Projects
+          - EvidenceBased2021
+          - ImpactEvaluation2021
+          - DataEvidence2021
+          - EngageCommunity2021
+          - EquitableOutcome2021
+          - EvidenceBased2022
+          - ImpactEvaluation2022
+          - DataEvidence2022
+          - EngageCommunity2022
+          - EquitableOutcome2022
+        urllink:
+          - G
+          - H
+          - I
+      Fund1:
+        sheet: 'Funding and ratings old'
+        colpos: A:C,D:F,J,S, AI:AR
+        skiprow: 2
+        skipfooter: 0
+        colnames:
+          - Level_of_Goverment
+          - State
+          - Jurisdication
+          - SLFRF_Award
+          - Population
+          - Award_Per_Capita
+          - Obligated_Funds
+          - Expended_Funds
+          - EvidenceBased2022
+          - ImpactEvaluation2022
+          - DataEvidence2022
+          - EngageCommunity2022
+          - EquitableOutcome2022
+          - EvidenceBased2021
+          - ImpactEvaluation2021
+          - DataEvidence2021
+          - EngageCommunity2021
+          - EquitableOutcome2021
+      InvestmentArea:
+        sheet: 'Investment areas & coding'
+        colpos: A:G, N:AE
+        skiprow: 3
+        skipfooter: 0
+        colnames:
+          - Level_of_Goverment
+          - State
+          - Jurisdication
+          - Agency
+          - InvestmentAreaLevel1a
+          - InvestmentAreaLevel1b
+          - InvestmentAreaLevel1c
+          - Activity
+          - Pilot
+          - Stage
+          - Reason
+          - Source
+          - ActivityFund
+          - TotalARPFund
+          - EvidenceBased
+          - EvidenceBasedReason
+          - EvidenceBasedAmount
+          - EvidenceBasedFollowUp
+          - ImpactEvaluation
+          - ImpactEvaluationReason
+          - ImpactEvaluationAmount
+          - ImpactEvaluationFollowUp
+          - DataEvidence
+          - DataEvidenceReason
+          - DataEvidenceAmount
+        urllink: R
+
+      EC:
+        sheet: 'Expended funds by ECs 2021-22'
+        colpos: A:G, H, J, L,  O, Q, S,V, X, Z,  AC, AE, AG,  AJ, AL, AN,AQ,AS,AU, AX,AZ,BB
+        skiprow: 5
+        skipfooter: 1
+        colnames:
+          - Level_of_Goverment
+          - State
+          - Jurisdication
+          - Expenditure
+          - ExpenditureSinceLastReport
+          - Expenditure_Interim
+          - Expenditure_2011
+          - EC1_2022
+          - EC1_Interim
+          - EC1_2021
+          - EC2_2022
+          - EC2_Interim
+          - EC2_2021
+          - EC3_2022
+          - EC3_Interim
+          - EC3_2021
+          - EC4_2022
+          - EC4_Interim
+          - EC4_2021
+          - EC5_2022
+          - EC5_Interim
+          - EC5_2021
+          - EC6_2022
+          - EC6_Interim
+          - EC6_2021
+          - EC7_2022
+          - EC7_Interim
+          - EC7_2021
+      RFAInvestmentAreaMeta:
+        sheet: RFA investment areas
+        colpos: A:G
+        skiprow: 1
+        skipfooter: 0
+        colnames:
+          - InvestmentArea
+          - Keywords
+          - Origin
+          - RFAPriority
+          - Stakeholder
+          - IssueArea
+          - ECCategory
+    sr:
+      - EvidenceBased2022
+      - ImpactEvaluation2022
+      - DataEvidence2022
+      - EngageCommunity2022
+      - EquitableOutcome2022
+      - EvidenceBased2021
+      - ImpactEvaluation2021
+      - DataEvidence2021
+      - EngageCommunity2021
+      - EquitableOutcome2021
+       
+output:
+  path: N:\Project\51448_ARPA\DC1\6. Data\mockup\output
+
+
+
+
+
+
+
