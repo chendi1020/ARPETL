@@ -97,19 +97,22 @@ class InputData(object):
     return df
 
   def readTreasury(self):
-    fp = self.path
-    fn = self.fn
-    filepath = os.path.join( fp, fn)
-    tabs = self.var.keys()
-    dfdict ={}
-    for i in tabs:
-      sheet= self.var[i]['sheet']
-      usecols = self.var[i]['colpos']
-      srow = self.var[i]['skiprow']
-      sfooter = self.var[i]['skipfooter']
-      colname = self.var[i]['colnames']
-      rawdf =  pd.read_excel(filepath, header=None, sheet_name=sheet,
-      usecols=usecols, skiprows=srow, skipfooter=sfooter, names=colname)
-      dfdict[i]= rawdf
-    return dfdict
+    maindict ={}
+    for i in self.files.keys():
+      fp = self.files[i]['path']
+      fn = self.files[i]['fn']
+      filepath = os.path.join( fp, fn)
+      tabs = self.files[i]['var'].keys()
+      dfdict ={}
+      for k in tabs:
+        sheet= self.files[i]['var'][k]['sheet']
+        usecols = self.files[i]['var'][k]['colpos']
+        srow = self.files[i]['var'][k]['skiprow']
+        sfooter = self.files[i]['var'][k]['skipfooter']
+        colname = self.files[i]['var'][k]['colnames']
+        rawdf =  pd.read_excel(filepath, header=None, sheet_name=sheet,
+        usecols=usecols, skiprows=srow, skipfooter=sfooter, names=colname)
+        dfdict[k]= rawdf
+      maindict[i]= dfdict
+    return maindict
 

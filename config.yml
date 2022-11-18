@@ -221,86 +221,87 @@ data21:
       - EquityOutcomeScore_2021
       - Score_2021
 
-TreasuryData22:
-  path: N:\Project\51448_ARPA\DC1\6. Data\ExpenditureFromTreasury
-  fn: July-2022-Quarterly-Reporting-Data-through-June-30-2022.xlsx
-  var:
-    Recipients:
-      sheet: Recipients
-      colpos: A:E,G:H
-      skiprow: 1
-      skipfooter: 0 
-      colnames:
-        - Recipient_ID
-        - RecipientName
-        - State
-        - ReportingTier
-        - RecipientType
-        - SLFRF_Award
-        - Num_Projects
-    Projects:
-      sheet: Projects
-      colpos: A:N
-      skiprow: 1
-      skipfooter: 0 
-      colnames:
-        - Project_ID
-        - Recipient_ID
-        - RecipientName
-        - State
-        - ReportingTier
-        - RecipientType
-        - CompletionStatus
-        - ProjectName
-        - ExpenditureCategoryGroup
-        - ExpenditureCategory
-        - ProjectDescription
-        - AdoptedBudget
-        - Cumulative_Obligations
-        - Cumulative_Expenditures
-    Plan:
-      sheet: Recovery Plans
-      colpos: A,H
-      skiprow: 1
-      skipfooter: 0 
-      colnames:
-        - Recipient_ID
-        - URL
-
-TreasuryData21:
-  path: N:\Project\51448_ARPA\DC1\6. Data\ExpenditureFromTreasury
-  fn: April-2022-Quarterly-and-Annual-Reporting-Data-through-March-31-2022.xlsx
-  var:
-    Recipients:
-      sheet: Recipients
-      colpos: A:E
-      skiprow: 1
-      skipfooter: 0 
-      colnames:
-        - Recipient_ID
-        - RecipientName
-        - State
-        - ReportingTier
-        - RecipientType
-    Projects:
-      sheet: Projects
-      colpos: A:L
-      skiprow: 1
-      skipfooter: 0 
-      colnames:
-        - Recipient_ID
-        - RecipientName
-        - State
-        - ReportingTier
-        - RecipientType
-        - ProjectName
-        - ExpenditureCategoryGroup
-        - ExpenditureCategory
-        - ProjectDescription
-        - AdoptedBudget
-        - Cumulative_Obligations
-        - Cumulative_Expenditures
-    
+TreasuryData:
+  files:
+    EC22:
+      path: N:\Project\51448_ARPA\DC1\6. Data\ExpenditureFromTreasury
+      fn: July-2022-Quarterly-Reporting-Data-through-June-30-2022.xlsx
+      var:
+        Recipients:
+          sheet: Recipients
+          colpos: A:E,G:H
+          skiprow: 1
+          skipfooter: 0 
+          colnames:
+            - Recipient_ID
+            - RecipientName
+            - State
+            - ReportingTier
+            - RecipientType
+            - SLFRF_Award
+            - Num_Projects
+        Projects:
+          sheet: Projects
+          colpos: A:N
+          skiprow: 1
+          skipfooter: 0 
+          colnames:
+            - Project_ID
+            - Recipient_ID
+            - RecipientName
+            - State
+            - ReportingTier
+            - RecipientType
+            - CompletionStatus
+            - ProjectName
+            - ExpenditureCategoryGroup
+            - ExpenditureCategory
+            - ProjectDescription
+            - AdoptedBudget
+            - Cumulative_Obligations
+            - Cumulative_Expenditures
+        Plan:
+          sheet: Recovery Plans
+          colpos: A,H
+          skiprow: 1
+          skipfooter: 0 
+          colnames:
+            - Recipient_ID
+            - URL
+    EC21:
+      path: N:\Project\51448_ARPA\DC1\6. Data\ExpenditureFromTreasury
+      fn: April-2022-Quarterly-and-Annual-Reporting-Data-through-March-31-2022.xlsx
+      var:
+        Recipients:
+          sheet: Recipients
+          colpos: A:E
+          skiprow: 1
+          skipfooter: 0 
+          colnames:
+            - Recipient_ID
+            - RecipientName
+            - State
+            - ReportingTier
+            - RecipientType
+        Projects:
+          sheet: Projects
+          colpos: A:L
+          skiprow: 1
+          skipfooter: 0 
+          colnames:
+            - Recipient_ID
+            - RecipientName
+            - State
+            - ReportingTier
+            - RecipientType
+            - ProjectName
+            - ExpenditureCategoryGroup
+            - ExpenditureCategory
+            - ProjectDescription
+            - AdoptedBudget
+            - Cumulative_Obligations
+            - Cumulative_Expenditures
+        
 
 
 
