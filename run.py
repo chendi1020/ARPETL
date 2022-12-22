@@ -124,6 +124,7 @@ eproject= eproject.join(dat[var].set_index(['State', 'Jurisdication','Level_of_G
 #eproject['InvestAreaMap1'].unique()
 
 
+#output
 helper.output_to_excel(config['output']['path'], pinvestL,'PlanInvest.xlsx' )
 helper.output_to_excel(config['output']['path'], ECr,'TreasuryEC.xlsx' )
 helper.output_to_excel(config['output']['path'], rankL,'Ranking.xlsx' )
