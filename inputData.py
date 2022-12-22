@@ -47,10 +47,12 @@ class InputData(object):
     rawdf =  pd.read_excel(filepath, header=None, sheet_name=sheet,
     usecols=usecols, skiprows=srow, skipfooter=sfooter, names=colname)
     setupLog().info("{} raw dataframe has {} rows".format(group, len(rawdf)))
-    # if group == 'InvestmentArea':
-    #   urlpos =self.var[group]['urllink']
-    #   urldf = read_link(filepath, sheet, srow+1, rawdf.shape[0]+srow+1, urlpos)
-    #   rawdf= rawdf.join(urldf)
+    if group == 'InvestmentArea':
+      path =r"N:\Project\51448_ARPA\DC1\6. Data\ExpenditureFromTreasury"
+      file = "July-2022-Quarterly-Reporting-Data-through-June-30-2022.xlsx"
+      TProj22 = pd.read_excel(os.path.join(path, file), sheet_name="Projects")
+      var= ['Project Name','Project ID','Project Description','Completion Status']
+      rawdf= rawdf.join(TProj22[var].set_index('Project ID'), on='Project_ID')
     if group == 'Fund':
       urlposL =self.var[group]['urllink']
       for i in urlposL:
