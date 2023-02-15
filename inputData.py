@@ -65,6 +65,10 @@ class InputData(object):
     dfl = df.melt(id_vars= indexvar)
     dfl['InvestmentAreaDescr']= dfl['variable'].transform(lambda x:  self.investArea[x])
     dfl = dfl.join(df.set_index(['Level_of_Goverment','State','Jurisdication']), on=['Level_of_Goverment','State','Jurisdication'])
+    definvest = pd.read_excel(self.InvestmentAreaDef)
+    orgrow = len(dfl)
+    dfl = dfl.join(definvest.set_index('InvestmentVar'), on='variable', rsuffix='_ref')
+    assert len(dfl)==orgrow
     return sort_jurisidiction(dfl)
 
   def readold(self):
@@ -174,7 +178,13 @@ class InputData(object):
       
        EC['SpendPct']=EC['value']/EC['Expended_Funds']
        ECSP = EC[EC['variable'].isin(['SLFRF_Award', 'Expended_Funds', 'AvailableFund'])==False]
+       #add zero
+       indexvar = [x for x in ECSP.columns if x not in ['variable','value']]
+       ECSP1=ECSP.pivot_table(index= indexvar, columns='variable', values='value', aggfunc='max')
+       ECSP1= ECSP1.fillna(0).reset_index()
+       ECSP2 = ECSP1.melt(id_vars=indexvar)
        ECother = EC[EC['variable'].isin(['SLFRF_Award', 'Expended_Funds', 'AvailableFund'])]
+       
        National = ECSP.groupby(['Year','variable']).agg({'value':sum}).reset_index()
        National['Total']= National.groupby('Year')['value'].transform(sum)
        National['SpendPct']= National['value']/National['Total']
@@ -190,7 +200,7 @@ class InputData(object):
        aggMedian= LvlGov.append(National).fillna('National')
        aggMedian['AggGroup']='Y'
 
-       ECSP = ECSP.join(National.set_index(['Year','variable']), on=['Year','variable'], rsuffix='_natl')
+       ECSP = ECSP2.join(National.set_index(['Year','variable']), on=['Year','variable'], rsuffix='_natl')
        ECSP = ECSP.join(LvlGov.set_index(['Year','variable','Level_of_Goverment']), on=['Year','variable','Level_of_Goverment'], rsuffix='_gov')
        
        indvar = [x for x in ECSP.columns if x not in ('SpendPct', 'SpendPct_natl','SpendPct_gov')]

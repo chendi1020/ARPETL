@@ -1,6 +1,6 @@
 input:
-    data_path: N:\Project\51448_ARPA\DC1\6. Data\
-    fn: UPDATED_2022 recovery plans Revised Template_12_21.xlsx
+    data_path: N:\Project\51448_ARPA\DC1\6. Data\final data
+    fn: UPDATED_2022 recovery plans Revised Template_1_23_23.xlsx
     var:
       Jurisdication:
         sheet: 'Funding and ratings'
@@ -75,7 +75,7 @@ input:
           - I
       InvestmentArea:
         sheet: 'Investment areas & coding'
-        colpos: A:H, I:P, S:AE
+        colpos: A:H, I:P, Q,S:AF, AO
         skiprow: 4
         skipfooter: 0
         colnames:
@@ -95,6 +95,8 @@ input:
           - EvidenceBasedKeyword
           - EvidenceBasedSrc
           - EvidenceBasedAmount
+          - EvidenceLevel
+          - Review
           - StrategyName
           - EvidenceBasedConfirm
           - InvestmentEvaluation
@@ -108,6 +110,7 @@ input:
           - SupportIT
           - ConfirmDataEvidence
           - DataEvidenceAmount
+          - ManualProjectSummary
       RFAInvestmentAreaMeta:
         sheet: RFA investment areas
         colpos: A:G
@@ -255,11 +258,11 @@ input:
         - Justice
       Infrastructure:
         - Broadband
-       
-
-
+    InvestmentAreaDef: N:\Project\51448_ARPA\DC1\6. Data\final data\InvestmentAreaDefinition.xlsx
 output:
   path: N:\Project\51448_ARPA\DC1\6. Data\mockup\output
+
+
 
 
 

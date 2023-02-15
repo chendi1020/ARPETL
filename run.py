@@ -93,24 +93,49 @@ eproj = dataobj.read_data(group="InvestmentArea")
 eproj.columns
 eproj['InvestAreaMap1']= eproj['InvestmentAreaLevel1'].transform(mapinvest)
 eproj['InvestAreaMap2']= eproj['InvestmentAreaLevel2'].transform(mapinvest)
-
+logger.info(f"there are {eproj.shape[0]} records in investAreaMapping")
 
 eproject = eproj[  (eproj['StrategyName'].notnull()) |  (eproj['ConfirmEvaluation']==1) | (eproj['ConfirmDataEvidence']==1)]
+
+
+logger.info(f"there are {eproject.shape[0]} exemplar projects identified using the logic above")
 #eproject =eproj[eproj['StrategyName'].notnull()]
-unmatched = ((eproject['InvestmentAreaLevel2'].notnull()) & (eproject['InvestAreaMap2'].isnull()) ) | ( (
+unmatched = ((eproject['InvestmentAreaLevel2'].notnull()) & (eproject['InvestAreaMap2'].isnull()) ) & ( (
  eproject['InvestmentAreaLevel1'].notnull()) & (eproject['InvestAreaMap1'].isnull()))
 
 #those could not being mapped
 t= eproject[unmatched ]
-#recode to Misc
-# eproject['InvestAreaMap1']= np.where(unmatched & (eproject['InvestAreaMap1'].isnull()) & (eproject['InvestAreaMap2'].isnull()), 
-# 'Misc',eproject['InvestAreaMap1'])
-#fill missing with original
-eproject['InvestAreaMap1']= np.where(eproject['InvestAreaMap1'].isnull(), eproject['InvestmentAreaLevel1'],eproject['InvestAreaMap1'])
-eproject['InvestAreaMap2']= np.where(eproject['InvestAreaMap2'].isnull(), eproject['InvestmentAreaLevel2'],eproject['InvestAreaMap2'])
+logger.info(f"{ list(set(t['InvestmentAreaLevel1'].tolist())) }")
+logger.info(f"{ list(set(t['InvestmentAreaLevel2'].tolist())) }")
+
+
+eproject.loc[:,'InvestAreaMap1']= np.where( (eproject['InvestAreaMap1'].isnull()) & (eproject['InvestmentAreaLevel1']!='Other'),
+                                     eproject['InvestmentAreaLevel1'],eproject['InvestAreaMap1'])
+eproject.loc[:,'InvestAreaMap2']= np.where((eproject['InvestAreaMap2'].isnull()) & (eproject['InvestmentAreaLevel2']!='Other'), 
+                                    eproject['InvestmentAreaLevel2'],eproject['InvestAreaMap2'])
+
+noinvest = (eproject['InvestAreaMap1'].isnull()) & (eproject['InvestAreaMap2'].isnull())
+noinvestd = eproject[noinvest]
+
+logger.info(f"{ list(set(noinvestd['InvestmentAreaLevel1'].tolist())) }")
+logger.info(f"{ list(set(noinvestd['InvestmentAreaLevel2'].tolist())) }")
 
 eproject = helper.sort_jurisidiction(eproject)
 helper.check_STAbbr(eproject)
+
+noTreasuryProj=eproject[eproject['Project Description'].isnull()]
+logger.info(f"there are {noTreasuryProj.shape[0]} exemplar projects without treasury ID mapped")
+
+#fill null with column AO mannual project summary
+eproject['Project_Description']= np.where(eproject['Project Description'].isnull(), eproject['ManualProjectSummary'],eproject['Project Description'])
+
+noProjDes=eproject[eproject['Project_Description'].isnull()]
+logger.info(f"there are {noProjDes.shape[0]} exemplar projects without project summary")
+
+#rename
+eproject= eproject.rename(columns={'Project_Description':'Project Description'})
+
+
 
 #convert to numeric
 numlist = ['ActivityFund','EvidenceBasedAmount','ImpactEvaluationAmount','DataEvidenceAmount']
@@ -121,7 +146,6 @@ var= ['State', 'Jurisdication','Level_of_Goverment','SLFRF_Award',
        'Population','URL_I']
 eproject= eproject.join(dat[var].set_index(['State', 'Jurisdication','Level_of_Goverment']), on=['State', 'Jurisdication','Level_of_Goverment'])
 
-#eproject['InvestAreaMap1'].unique()
 
 
 #output
