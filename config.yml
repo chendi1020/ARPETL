@@ -1,5 +1,5 @@
 input:
-    data_path: N:\Project\51448_ARPA\DC1\6. Data\final data
+    data_path: C:\Users\DChen\Projects\RFA\Data\input
     fn: UPDATED_2022 recovery plans Revised Template_1_23_23.xlsx
     var:
       Jurisdication:
@@ -125,7 +125,7 @@ input:
           - IssueArea
           - ECCategory
     data21:
-      data_path: C:\Users\DChen\Projects\RFA\output\B3
+      data_path: C:\Users\DChen\Projects\RFA\Data\input
       fn: cleandat.xlsx
       Ranking: 
         sheet: wide
@@ -145,7 +145,7 @@ input:
     TreasuryData:
       files:
         EC22:
-          path: N:\Project\51448_ARPA\DC1\6. Data\ExpenditureFromTreasury
+          path: C:\Users\DChen\Projects\RFA\Data\input
           fn: July-2022-Quarterly-Reporting-Data-through-June-30-2022.xlsx
           var:
             Recipients:
@@ -190,7 +190,7 @@ input:
                 - Recipient_ID
                 - URL
         EC22mapping:
-          path: N:\Project\51448_ARPA\DC1\6. Data\ExpenditureFromTreasury
+          path: C:\Users\DChen\Projects\RFA\Data\input
           fn: Copy of updated_recipient_id_july_2022_mathematica_jurisdictions.xlsx
     sr:
       - EvidenceBased2022
@@ -258,9 +258,9 @@ input:
         - Justice
       Infrastructure:
         - Broadband
-    InvestmentAreaDef: N:\Project\51448_ARPA\DC1\6. Data\final data\InvestmentAreaDefinition.xlsx
+    InvestmentAreaDef: C:\Users\DChen\Projects\RFA\Data\input\InvestmentAreaDefinition.xlsx
 output:
-  path: N:\Project\51448_ARPA\DC1\6. Data\mockup\output
+  path: C:\Users\DChen\Projects\RFA\Data\output
 
 
 
