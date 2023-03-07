@@ -1,6 +1,6 @@
 input:
     data_path: C:\Users\DChen\Projects\RFA\Data\input
-    fn: UPDATED_2022 recovery plans Revised Template_1_23_23.xlsx
+    fn: 3.6.23_UPDATED_2022 recovery plans Revised Template (1).xlsx
     var:
       Jurisdication:
         sheet: 'Funding and ratings'
@@ -260,7 +260,7 @@ input:
         - Broadband
     InvestmentAreaDef: C:\Users\DChen\Projects\RFA\Data\input\InvestmentAreaDefinition.xlsx
 output:
-  path: C:\Users\DChen\Projects\RFA\Data\output
+  path: C:\Users\DChen\Projects\RFA\Data\output\Newoutput
 
 
 
