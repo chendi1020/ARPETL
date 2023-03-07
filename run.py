@@ -68,8 +68,9 @@ indexvar
 rankL = rank.melt(id_vars= indexvar)
 rankL.columns
 rankL['Year']= rankL['variable'].str[-4:]
-rankL= rankL.query("value==value")
-rankL['Group']= rankL['variable'].str.replace("_\d+","")
+rankL= rankL.copy()
+rankL=rankL.query("value==value")
+rankL['Group']= rankL['variable'].str.replace("_\d+","",regex=True)
 rankL1 =rankL[rankL['Group'].isin([x for x in rankL['Group'].unique().tolist() if "Score" in x ])].\
     pivot_table(index=['Jurisdiction','Group'], columns='Year', values='value', aggfunc=max).reset_index()
 rankL1['Change']= np.where( (rankL1['2022'].isnull() ) | (rankL1['2021'].isnull()), 'U', 
@@ -95,7 +96,7 @@ eproj['InvestAreaMap1']= eproj['InvestmentAreaLevel1'].transform(mapinvest)
 eproj['InvestAreaMap2']= eproj['InvestmentAreaLevel2'].transform(mapinvest)
 logger.info(f"there are {eproj.shape[0]} records in investAreaMapping")
 
-eproject = eproj[  (eproj['StrategyName'].notnull()) |  (eproj['ConfirmEvaluation']==1) | (eproj['ConfirmDataEvidence']==1)]
+eproject = eproj[  (eproj['StrategyName'].notnull()) |  (eproj['ConfirmEvaluation']==1) | (eproj['ConfirmDataEvidence']==1)].copy()
 
 
 logger.info(f"there are {eproject.shape[0]} exemplar projects identified using the logic above")
@@ -115,7 +116,7 @@ eproject.loc[:,'InvestAreaMap2']= np.where((eproject['InvestAreaMap2'].isnull())
                                     eproject['InvestmentAreaLevel2'],eproject['InvestAreaMap2'])
 
 noinvest = (eproject['InvestAreaMap1'].isnull()) & (eproject['InvestAreaMap2'].isnull())
-noinvestd = eproject[noinvest]
+noinvestd = eproject[noinvest].copy()
 
 logger.info(f"{ list(set(noinvestd['InvestmentAreaLevel1'].tolist())) }")
 logger.info(f"{ list(set(noinvestd['InvestmentAreaLevel2'].tolist())) }")
@@ -154,3 +155,4 @@ helper.output_to_excel(config['output']['path'], ECr,'TreasuryEC.xlsx' )
 helper.output_to_excel(config['output']['path'], rankL,'Ranking.xlsx' )
 helper.output_to_excel(config['output']['path'], eproject,'InvestmentProject.xlsx' )
 
+logger.info(f"the program completes successfully")

@@ -85,7 +85,7 @@ class InputData(object):
     rawdf['State']= rawdf['State'].str.strip()
     setupLog().info("{} raw dataframe has {} rows".format("old rank", len(rawdf)))
     df= sort_jurisidiction(rawdf)
-    df= df.query("EnhanceDataEvidenceScore_2021==EnhanceDataEvidenceScore_2021")
+    df= df.query("EnhanceDataEvidenceScore_2021==EnhanceDataEvidenceScore_2021").copy()
     list = [x for x in df.columns if "Score" in x and x != 'Score_2021']
     dictmap ={
       'No Evidence':0,
