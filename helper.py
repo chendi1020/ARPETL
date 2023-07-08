@@ -112,7 +112,7 @@ def sort_jurisidiction(df):
     #recode jursdiction 
     df['Jurisdication']= np.where(df['Level_of_Goverment'] !='County', df['Jurisdication'],
      np.where(df['Jurisdication'].str.contains('County'), df['Jurisdication'], df['Jurisdication'].str.strip()+ " County" ))
-    df['Jurisdiction']= np.where(df['Level_of_Goverment']=='State', df['STAbbr'],
+    df['Jurisdiction']= np.where( (df['Level_of_Goverment']=='State') & (df['Jurisdication'] !='Navajo Nation')  & (df['Jurisdication'] !='Cherokee Nation'), df['STAbbr'],
         np.where(df['STAbbr']=="DC", "District of Columbia",  df['Jurisdication']+","+df['STAbbr'] )
       )
     return df 

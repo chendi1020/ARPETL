@@ -4,6 +4,8 @@ import os
 import pandas as pd
 import helper
 import numpy as np
+import re
+
 
 
 # import modules/files
@@ -15,130 +17,142 @@ fpath = Path.joinpath(currpath,'config.yml')
 config = helper.import_config(fpath)
 configinput = config['input']
 
-
+configinput['data21']
 
 dataobj = ip.InputData(**configinput)
 logger.info("start reading input data")
 
+#plan Investment
+pinvest = dataobj.read_data("PlanInvest")
+pinvestL = dataobj.process_plan_invest(pinvest)
+#funding and rating
 #dat is fund
 dat = dataobj.read_data(group="Fund")
-numlist = ['SLFRF_Award','Obligated_Funds','Expended_Funds','Population', 'Award_Per_Capita','Expenditure_EC34',
-          'Num_Projects']
+numlist = ['SLFRF_Award','Population', 'Award_Per_Capita', 'Num_Projects']+[x for x in dat.columns if "Score" in x]
 for i in numlist:
     dat[i]= pd.to_numeric(dat[i], errors='coerce')
+dat['Score_2022']= dat[[x for x in dat.columns if "Score" in x]].sum(axis=1)
+dat = helper.sort_jurisidiction(dat)
+dat.columns
 
 #sort data
-dat = helper.sort_jurisidiction(dat)
-logger.info("Fund dataframe "+ helper.check_STAbbr(dat))    
+logger.info("Fund dataframe "+ helper.check_STAbbr(dat)) 
 
-sr = config['input']['sr']
-#drop sr transpose available fund
-dat['AvailableFund']= dat['SLFRF_Award']- dat['Expended_Funds'].fillna(0) #fill missing for now. might need to remove with prod data
-keyvar = ['Level_of_Goverment', 'State', 'STAbbr', 'Jurisdication','Jurisdiction']
-datL = dat.drop(sr+['RecoveryPlan_2021', 'RecoveryPlan_Interim', 'RecoveryPlan_2022',
-'URL_G', 'URL_H', 'URL_I','Num_Projects','Expenditure_EC34'], axis=1).melt(id_vars= keyvar+['Population'])
-datL['variable'].unique()
-datL=datL.join(dat.set_index(keyvar+['Population']), on =keyvar+['Population'])
+#add plan url to plan
+var= ['State', 'Jurisdication','Level_of_Goverment','SLFRF_Award',
+       'Population','URL_I']
+pinvestL= pinvestL.join(dat[var].set_index(['State', 'Jurisdication','Level_of_Goverment']), on=['State', 'Jurisdication','Level_of_Goverment'])
+pinvestL=pinvestL.sort_values(['STAbbr','Jurisdiction'])
+#add rowid by group for select unique
+pinvestL['rid']=1
+pinvestL['rid']= pinvestL.groupby(['State', 'Jurisdication','Level_of_Goverment'])['rid'].cumsum()
+# add total number of investment by jurisdiction
+pinvestL['valuenum']= np.where(pinvestL['value']=='Y',1,0)
+pinvestL['TotalInvestNum']= pinvestL.groupby(['State', 'Jurisdication','Level_of_Goverment'])['valuenum'].transform(sum)
 
 
-#strength of response melt
-leftvar = [x for x in dat.columns if x not in sr and x not in keyvar ]
-srdf = dat.drop(leftvar, axis=1).melt(id_vars= keyvar)
-srdf['variable'].unique()
-srdf['Year']= np.where(srdf['variable'].str.contains('2021'),2021,2022)
-srdf['Provision']= srdf['variable'].str.replace('\d+', '')
-#srdf= srdf.pivot_table(index= keyvar+ ['Provision'], columns='Year', values='value', aggfunc= 'min').reset_index()
 
-invest = dataobj.read_data(group="InvestmentArea")
-invest = helper.sort_jurisidiction(invest)
-helper.check_STAbbr(invest)
+
+#add EC data
+ECr = dataobj.ECdat()
+ECr = helper.sort_jurisidiction(ECr)
+
+
+#old ranking
+oldrank = dataobj.readold()
+oldrank.columns
+rank = dat.join(oldrank.set_index(['Jurisdiction','STAbbr','Level_of_Goverment']).drop(['Jurisdication','State'], axis=1),
+on = ['Jurisdiction','STAbbr','Level_of_Goverment'] )
+indexvar = [x for x in rank.columns if not re.search(r'\d+$',x)]
+indexvar
+rankL = rank.melt(id_vars= indexvar)
+rankL.columns
+rankL['Year']= rankL['variable'].str[-4:]
+rankL= rankL.copy()
+rankL=rankL.query("value==value")
+rankL['Group']= rankL['variable'].str.replace("_\d+","",regex=True)
+rankL1 =rankL[rankL['Group'].isin([x for x in rankL['Group'].unique().tolist() if "Score" in x ])].\
+    pivot_table(index=['Jurisdiction','Group'], columns='Year', values='value', aggfunc=max).reset_index()
+rankL1['Change']= np.where( (rankL1['2022'].isnull() ) | (rankL1['2021'].isnull()), 'U', 
+np.where(rankL1['2022']>rankL1['2021'], 'Up',
+np.where( rankL1['2022']==rankL1['2021'],'Same','Down') ) )
+rankL= rankL.join(rankL1.set_index(['Jurisdiction','Group']), on=['Jurisdiction','Group'])
+#add 2022 score
+score = rankL1.query("Group=='Score'").rename(columns={"2022":"Composite2022","2021":"Composite2021"}).drop(["Group","Change"], axis=1)
+rankL = rankL.join(score.set_index("Jurisdiction"), on="Jurisdiction")
+
+
+##investment area and coding
+investmapping=config['input']['investAreaMapping']
+def mapinvest(i):
+    for k in investmapping.keys():
+        for j in investmapping[k]:
+            if i==j:
+                return k
+    return None 
+eproj = dataobj.read_data(group="InvestmentArea")
+eproj.columns
+eproj['InvestAreaMap1']= eproj['InvestmentAreaLevel1'].transform(mapinvest)
+eproj['InvestAreaMap2']= eproj['InvestmentAreaLevel2'].transform(mapinvest)
+logger.info(f"there are {eproj.shape[0]} records in investAreaMapping")
+
+eproject = eproj[  (eproj['StrategyName'].notnull()) |  (eproj['ConfirmEvaluation']==1) | (eproj['ConfirmDataEvidence']==1)].copy()
+
+
+logger.info(f"there are {eproject.shape[0]} exemplar projects identified using the logic above")
+#eproject =eproj[eproj['StrategyName'].notnull()]
+unmatched = ((eproject['InvestmentAreaLevel2'].notnull()) & (eproject['InvestAreaMap2'].isnull()) ) & ( (
+ eproject['InvestmentAreaLevel1'].notnull()) & (eproject['InvestAreaMap1'].isnull()))
+
+#those could not being mapped
+t= eproject[unmatched ]
+logger.info(f"{ list(set(t['InvestmentAreaLevel1'].tolist())) }")
+logger.info(f"{ list(set(t['InvestmentAreaLevel2'].tolist())) }")
+
+
+eproject.loc[:,'InvestAreaMap1']= np.where( (eproject['InvestAreaMap1'].isnull()) & (eproject['InvestmentAreaLevel1']!='Other'),
+                                     eproject['InvestmentAreaLevel1'],eproject['InvestAreaMap1'])
+eproject.loc[:,'InvestAreaMap2']= np.where((eproject['InvestAreaMap2'].isnull()) & (eproject['InvestmentAreaLevel2']!='Other'), 
+                                    eproject['InvestmentAreaLevel2'],eproject['InvestAreaMap2'])
+
+noinvest = (eproject['InvestAreaMap1'].isnull()) & (eproject['InvestAreaMap2'].isnull())
+noinvestd = eproject[noinvest].copy()
+
+logger.info(f"{ list(set(noinvestd['InvestmentAreaLevel1'].tolist())) }")
+logger.info(f"{ list(set(noinvestd['InvestmentAreaLevel2'].tolist())) }")
+
+eproject = helper.sort_jurisidiction(eproject)
+helper.check_STAbbr(eproject)
+
+noTreasuryProj=eproject[eproject['Project Description'].isnull()]
+logger.info(f"there are {noTreasuryProj.shape[0]} exemplar projects without treasury ID mapped")
+
+#fill null with column AO mannual project summary
+eproject['Project_Description']= np.where(eproject['Project Description'].isnull(), eproject['ManualProjectSummary'],eproject['Project Description'])
+
+noProjDes=eproject[eproject['Project_Description'].isnull()]
+logger.info(f"there are {noProjDes.shape[0]} exemplar projects without project summary")
+
+#rename
+eproject= eproject.rename(columns={'Project_Description':'Project Description'})
+
+
+
 #convert to numeric
 numlist = ['ActivityFund','EvidenceBasedAmount','ImpactEvaluationAmount','DataEvidenceAmount']
 for i in numlist:
-    invest[i]= pd.to_numeric(invest[i], errors='coerce')
-#uniform the uper lower case
-investVar = ['InvestmentAreaLevel1a','InvestmentAreaLevel1b','InvestmentAreaLevel1c']
-for i in investVar:
-    invest[i]= invest[i].str.strip().str.capitalize()
+    eproject[i]= pd.to_numeric(eproject[i], errors='coerce')
 
-#clean district in level of government for DC
-invest['Level_of_Goverment']= np.where(invest['Level_of_Goverment']=="District", "City",invest['Level_of_Goverment'])
-invest['Level_of_Goverment'].unique()
-# melt investment area
-invest.columns
-investvar =[x for x in invest.columns if x[:19] != "InvestmentAreaLevel"]
-investL = invest.melt(id_vars= investvar, var_name="InvestmentAreaVariable", value_name="InvestmentArea")
-
-
-#map investment area to EC
-investMeta = dataobj.read_data(group="RFAInvestmentAreaMeta")
-investMeta['ECgrp']= 'EC'+investMeta['ECCategory'].str.slice(0,1)
-investMeta['InvestmentArea']= np.where(investMeta['InvestmentArea']=='Food insecurity (including SNAP Benefits)',
-'Food insecurity (including snap benefits)',investMeta['InvestmentArea'])
-
-
-       
-helper.mergechk(investL, investMeta, mergebycol=['InvestmentArea'], checkcol='Keywords')
-investL= investL.join(investMeta.set_index('InvestmentArea').loc[:,'ECgrp'], on='InvestmentArea')
-investL['ECgrp']= investL['ECgrp'].fillna('NoEC')
-
-#jurisidctions with confirmed 3 provisions
-prov3 = invest[keyvar + ['EvidenceBased','ImpactEvaluation','DataEvidence']].\
-    melt(id_vars= keyvar).query("value=='Yes'").drop_duplicates()
+var= ['State', 'Jurisdication','Level_of_Goverment','SLFRF_Award',
+       'Population','URL_I']
+eproject= eproject.join(dat[var].set_index(['State', 'Jurisdication','Level_of_Goverment']), on=['State', 'Jurisdication','Level_of_Goverment'])
 
 
 
-#EC
-ECdat = dataobj.read_data(group="EC")
-#sort data
-ECdat = helper.sort_jurisidiction(ECdat)
-helper.check_STAbbr(ECdat)
+#output
+helper.output_to_excel(config['output']['path'], pinvestL,'PlanInvest.xlsx' )
+helper.output_to_excel(config['output']['path'], ECr,'TreasuryEC.xlsx' )
+helper.output_to_excel(config['output']['path'], rankL,'Ranking.xlsx' )
+helper.output_to_excel(config['output']['path'], eproject,'InvestmentProject.xlsx' )
 
-keyvar = [x for x in ECdat.columns if x[:2] != "EC" ]
-ECdat = ECdat.melt(id_vars=keyvar)
-ECdat['variable'].unique()
-#conver to numbers
-numVar = ['Expenditure', 'ExpenditureSinceLastReport', 'Expenditure_Interim', 'Expenditure_2011','value']
-for i in numVar:
-    ECdat[i]= pd.to_numeric(ECdat[i], errors='coerce')
-
-ECdat['Year']= np.where(ECdat['variable'].str.contains('2021'),'2021',\
-    np.where(ECdat['variable'].str.contains('2022'),'2022', 'Interim'))
-ECdat['ECgrp']= ECdat['variable'].str.split('_').str[0]
-# ECdat=ECdat[ECdat['value'] >=0]
-
-ECdat1= ECdat.pivot_table(index= ['Level_of_Goverment','Jurisdiction','ECgrp'], columns='Year', values='value', aggfunc= 'max').reset_index()
-ECdatOthers = ECdat[keyvar].drop_duplicates()
-ECdat1 = ECdat1.join(ECdatOthers.set_index(['Level_of_Goverment','Jurisdiction']), on=['Level_of_Goverment','Jurisdiction'])
-# keyvar
-len(ECdat1['Jurisdiction'].unique())
-#check any juridication in EC but not in dat
-ECid = ECdat['Jurisdication'].unique()
-datid = dat['Jurisdication'].unique()
-set(datid)-set(ECid)==set()
-(set(ECid)-set(datid))==set()
-
-#linkEC and overall award data for the desktop view
-datL.columns
-ECdat.columns
-v1= ['Level_of_Goverment', 'State', 'STAbbr', 'Jurisdication',
-       'Jurisdiction','variable', 'value']
-v2= ['Level_of_Goverment', 'State', 'STAbbr', 'Jurisdication',
-       'Jurisdiction','variable','value','Expenditure']
-tst = pd.concat( [datL[v1], ECdat[v2]])
-tst['variable'].unique()
-tst = tst.join(dat.set_index(['Level_of_Goverment', 'State', 'STAbbr', 'Jurisdication',
-       'Jurisdiction']).loc[:,['Population','SLFRF_Award','Expended_Funds','URL_I']], on=['Level_of_Goverment', 'State', 'STAbbr', 'Jurisdication',
-       'Jurisdiction'])
-
-#output data for tableau
-helper.output_to_excel(config['output']['path'], srdf,'ARPResponse.xlsx' )
-helper.output_to_excel(config['output']['path'], investL,'ARPInvestmentActivity.xlsx' )
-helper.output_to_excel(config['output']['path'], ECdat1,'ARPEC.xlsx' )
-helper.output_to_excel(config['output']['path'], tst,'ARPDataEC.xlsx' )
-helper.output_to_excel(config['output']['path'], tst,'ARPDataEC.xlsx' )
-
-# investMeta.to_excel("N:/Project/51448_ARPA/DC1/6. Data/mockup/output/InvestmentAreaMeta.xlsx", index=False)
-#test to pull link
-# from openpyxl import load_workbook
-
+logger.info(f"the program completes successfully")
