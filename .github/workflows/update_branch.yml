@@ -21,7 +21,7 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
-      - name: Create and run Python script to update settings.jsonc
+      - name: Create and run Python script to update config_vesion.jsonc
         run: |
           echo 'import os, re, json
 
@@ -30,14 +30,14 @@ jobs:
           branch_name = ref.split("/")[-1]
 
           # Read .jsonc file (remove simple "//" style comments)
-          filename = "settings.jsonc"
+          filename = "config_version.jsonc"
           with open(filename, "r", encoding="utf-8") as f:
               raw = f.read()
               cleaned = re.sub(r"//.*", "", raw)
 
           # Load as JSON and update the "branch" key
           data = json.loads(cleaned)
-          data["branch"] = branch_name
+          data["branch_name"] = branch_name
 
           # Write back as pure JSON (comments will be removed)
           with open(filename, "w", encoding="utf-8") as f:
