@@ -1,4 +1,4 @@
-name: Update Branch in JSONC (with python-jsonc-parser)
+name: Update JSONC with Branch Name (Python)
 
 on:
   push:
@@ -21,28 +21,29 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
-      - name: Install python-jsonc-parser
+      - name: Create and run Python script to update settings.jsonc
         run: |
-          python3 -m venv venv
-          . venv/bin/activate
-          pip install python-jsonc-parser
+          echo 'import os, re, json
 
-      - name: Update branch in settings.jsonc using Python
-        run: |
-          echo 'import os
-          from jsonc_parser.parser import JsoncParser
+          # Get branch name from GITHUB_REF
+          ref = os.environ.get("GITHUB_REF", "")
+          branch_name = ref.split("/")[-1]
 
+          # Read .jsonc file (remove simple "//" style comments)
           filename = "settings.jsonc"
-          branch_name = os.environ["GITHUB_REF"].split("/")[-1]
+          with open(filename, "r", encoding="utf-8") as f:
+              raw = f.read()
+              cleaned = re.sub(r"//.*", "", raw)
 
-          data = JsoncParser.parse_file(filename)
-          data["branch_name"] = branch_name
+          # Load as JSON and update the "branch" key
+          data = json.loads(cleaned)
+          data["branch"] = branch_name
 
+          # Write back as pure JSON (comments will be removed)
           with open(filename, "w", encoding="utf-8") as f:
-              f.write(data.json(indent=2, with_comments=True))
+              json.dump(data, f, indent=2)
           ' > update_branch.py
 
-          . venv/bin/activate
           python3 update_branch.py
 
       - name: Commit and push changes
