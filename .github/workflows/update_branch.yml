@@ -1,0 +1,52 @@
+name: Update Branch in JSONC (with python-jsonc-parser)
+
+on:
+  push:
+    branches:
+      - '*'  # Trigger on push to any branch
+
+permissions:
+  contents: write
+
+jobs:
+  update-jsonc:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Set up Git
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+      - name: Install python-jsonc-parser
+        run: |
+          python3 -m venv venv
+          . venv/bin/activate
+          pip install python-jsonc-parser
+
+      - name: Update branch in settings.jsonc using Python
+        run: |
+          echo 'import os
+from jsonc_parser.parser import JsoncParser
+
+filename = "settings.jsonc"
+branch_name = os.environ["GITHUB_REF"].split("/")[-1]
+
+data = JsoncParser.parse_file(filename)
+data["branch_name"] = branch_name
+
+with open(filename, "w", encoding="utf-8") as f:
+    f.write(data.json(indent=2, with_comments=True))
+' > update_branch.py
+
+          . venv/bin/activate
+          python3 update_branch.py
+
+      - name: Commit and push changes
+        run: |
+          git add settings.jsonc
+          git commit -m "Update branch in settings.jsonc to ${GITHUB_REF##*/}" || echo "No changes to commit"
+          git push origin ${GITHUB_REF##*/}
